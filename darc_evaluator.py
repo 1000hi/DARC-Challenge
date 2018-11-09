@@ -293,7 +293,7 @@ def main():
     """
     print("TESTING: Round 1")
     # Ground truth path for round 1
-    answer_file_path = "data/ground_truth.csv"
+    answer_file_path = "./data/ground_truth.csv"
 
     _client_payload = {}
     # The submission file of the team
@@ -307,7 +307,7 @@ def main():
     #                   format as the S file attacked. For example if S file is :
     #                   S_mySuperTeam_attempt_1.csv, then the F_hat file should be
     #                   F_mySuperTeam_attemot_1.csv
-    _client_payload["submission_file_path"] = "data/submission.csv"
+    _client_payload["submission_file_path"] = "./data/submission.csv"
 
     _context = {}
     # Name of the current team who is submitting the file

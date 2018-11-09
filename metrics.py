@@ -697,6 +697,7 @@ class UtilityMetrics(Metrics):
             # Get the date from the data at index idx
             #  TODO: .iloc should be used here for safety reason but iloc does not keep columns
             #  value <12-06-18, Antoine> #
+            
             gt_day = self._ground_truth.loc[idx, self._gt_t_col['date']]
             anon_day = self._anon_trans.loc[idx, self._gt_t_col['date']]
 
@@ -914,6 +915,7 @@ class UtilityMetrics(Metrics):
 def main():
     """main
     """
+
     total_time = time.process_time()
     ######################
     ### Initialisation ###
@@ -922,12 +924,15 @@ def main():
     start = time.process_time()
     T = pd.read_csv('./data/ground_truth.csv', sep=',', engine='c', na_filter=False, low_memory=False)
     T.columns = T_COL.values()
+    T.columns = T.columns.sort_values()
     M = T[T_COL['id_user']].value_counts()
     M = list(M.index)
     M.sort()
     M = pd.DataFrame(M, columns=M_COL.values())
     AT = pd.read_csv('./data/submission.csv', sep=',', engine='c', na_filter=False, low_memory=False)
     AT.columns = T_COL.values()
+
+    AT.columns = AT.columns.sort_values()
     print("Temps de lecture : {}".format(time.process_time() - start))
 
     #######################
