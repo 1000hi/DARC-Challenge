@@ -576,13 +576,13 @@ class CollaborativeFiltering(object):
         """
         # Initialization
         item_item_dic = {}
-
+        start = time.process_time()
         for item_no in range(len(self._item_user_dic)):
             for user_no in self._item_user_dic[item_no].keys():
                 for item2_no in self._user_item_dic[user_no].keys():
                      if item_no != item2_no:
                         item_item_dic[(item_no,item2_no)] = 1
-
+        start = time.process_time()
         for item_no,item2_no in item_item_dic.keys():
             item_item_dic[(item_no,item2_no)] = self._calc_cos_sim(item_no,item2_no)
 
@@ -767,20 +767,17 @@ class UtilityMetrics(Metrics):
         :returns: score of the metric.
 
         """
-
         # Processing of Ground Truth Database
         gt_colab_fi = CollaborativeFiltering(self._ground_truth)
-
         gt_colab_fi.preprocessing_data([12, 24, 36, 48], 1, max_qty_score=True)
         item_item_dic1 = gt_colab_fi.calc_item2item_dic()
-
+        
         # Processing of Anonymized Database
         anon_colab_fi = CollaborativeFiltering(self._anon_trans,\
                 item_table=gt_colab_fi.item_table)
-
         anon_colab_fi.preprocessing_data([12, 24, 36, 48], 1, max_qty_score=True)
         item_item_dic2 = anon_colab_fi.calc_item2item_dic()
-
+        
         # Calcul of the distance
         score = self._calc_sim_mat_dist(item_item_dic1, item_item_dic2)
 
@@ -804,17 +801,15 @@ class UtilityMetrics(Metrics):
         :returns: score of the metric.
 
         """
-
+        
         # Processing of Ground Truth Database
         gt_colab_fi = CollaborativeFiltering(self._ground_truth)
-
         gt_colab_fi.preprocessing_data([12], 1, max_qty_score=False)
         item_item_dic1 = gt_colab_fi.calc_item2item_dic()
-
+        
         # Processing of Anonymized Database
         anon_colab_fi = CollaborativeFiltering(self._anon_trans,\
                 item_table=gt_colab_fi.item_table)
-
         anon_colab_fi.preprocessing_data([12], 1, max_qty_score=False)
         item_item_dic2 = anon_colab_fi.calc_item2item_dic()
 
@@ -929,7 +924,9 @@ def main():
     M = list(M.index)
     M.sort()
     M = pd.DataFrame(M, columns=M_COL.values())
-    AT = pd.read_csv('./data/submission.csv', sep=',', engine='c', na_filter=False, low_memory=False)
+    
+    # AT = pd.read_csv('./data/submission.csv', sep=',', engine='c', na_filter=False, low_memory=False)
+    AT = pd.read_csv('ouputTestprice.csv', sep=',', engine='c', na_filter=False, low_memory=False)
     AT.columns = T_COL.values()
 
     AT.columns = AT.columns.sort_values()
@@ -976,6 +973,76 @@ def main():
     #  TODO: Thread all execution of e* and s* metrics, BUT DO NOT thread utility and Re-id metrics
     #  together because we tronc the item_id in Re-id metrics, and it appears that it's using the
     #  same data due to python not copying value <07-06-18, Antoine Laurent> #
+    
+
+def mainTest():
+    """main for Testing
+    """
+    print("BEGGININNG OF MAIN TEST ")
+    total_time = time.process_time()
+    ######################
+    ### Initialisation ###
+    ######################
+
+    start = time.process_time()
+    T = pd.read_csv('./data/ground_truth.csv', sep=',', engine='c', na_filter=False, low_memory=False)
+    T.columns = T_COL.values()
+    T.columns = T.columns.sort_values()
+    M = T[T_COL['id_user']].value_counts()
+    M = list(M.index)
+    M.sort()
+
+    M = pd.DataFrame(M, columns=M_COL.values())
+    
+    AT = pd.read_csv('ouputTestprice.csv', sep=',', engine='c', na_filter=False, low_memory=False)
+    AT.columns = T_COL.values()
+
+    AT.columns = AT.columns.sort_values()
+    print("Temps de lecture : {}".format(time.process_time() - start))
+
+    #######################
+    ### Utility Metrics ###
+    #######################
+
+    start = time.process_time()
+    m = UtilityMetrics(M, T, AT)
+    print("Temps d'initialisation : {}".format(time.process_time() - start))
+
+    start = time.process_time()
+    print("E1 score : {}".format(m.e1_metric()))
+    print("E2 score : {}".format(m.e2_metric()))
+    print("E3 score : {}".format(m.e3_metric()))
+    print("E4 score : {}".format(m.e4_metric()))
+    print("E5 score : {}".format(m.e5_metric()))
+    print("E6 score : {}".format(m.e6_metric()))
+
+    print("Temps de calcul : {}".format(time.process_time() - start))
+
+    #####################
+    ### Re-id Metrics ###
+    #####################
+
+    start = time.process_time()
+    m = ReidentificationMetrics(M, T, AT)
+    print("Temps d'initialisation : {}".format(time.process_time() - start))
+
+    start = time.process_time()
+    print("S1 score : {}".format(m.s1_metric()))
+    print("S2 score : {}".format(m.s2_metric()))
+    print("S3 score : {}".format(m.s3_metric()))
+    print("S4 score : {}".format(m.s4_metric()))
+    print("S5 score : {}".format(m.s5_metric()))
+    print("S6 score : {}".format(m.s6_metric()))
+
+    print("Temps de calcul : {}".format(time.process_time() - start))
+
+    print("Temps de calcul TOTAL : {}".format(time.process_time() - total_time))
+
+    #  TODO: Thread all execution of e* and s* metrics, BUT DO NOT thread utility and Re-id metrics
+    #  together because we tronc the item_id in Re-id metrics, and it appears that it's using the
+    #  same data due to python not copying value <07-06-18, Antoine Laurent> #
+    
 
 if __name__ == "__main__":
-    main()
+    # main()
+    mainTest()
