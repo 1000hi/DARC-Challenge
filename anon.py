@@ -6,7 +6,7 @@ import random
 import time
 import math
 import string
-
+import metrics
 os.chdir("C:\\Users\\Milly\\DARC-Challenge")
 
 # Path to the csv
@@ -138,9 +138,15 @@ class matrix():
                 if(i==len(_categories)-1):
                     line[5]=_categories[-1]
                     
+    def generalizeQuantityDizaine(self):
+        """_categories is a list with the upper limit of each price category"""
+        for line in self.matrice:
+            line[5] = self.roundup(int(line[5]))
+        
 
-    def shuffle(self):
-        random.shuffle(self.matrice)
+    def shuffle(self, list ):
+        random.shuffle(list)
+        return list
         
     def getSensitiveQuantity(self):
         print("[0-10,10-50,50-100,100-500,<500]")
@@ -276,7 +282,9 @@ class matrix():
         for line in self.matrice:
             if not line[0] in finalUserList:
                 line[0] = "DEL"
-    
+                
+    def roundup(self,x):
+        return int(math.ceil(x / 10.0)) * 10
     
     def getNbSupOfUsers(self,borne):
         nb=[]
@@ -341,14 +349,22 @@ class matrix():
                 subMatrix.append(line)
         return subMatrix
         
+    def shuffleUsersPairs(self):
+        userListShuffled = self.shuffle(self.userList)
+        for idxLine in range(len(self.matrice)):
+            user = self.matrice[idxLine][0]
+            self.matrice[idxLine][0] = userListShuffled[self.userList.index(user)]
+        
             
+            
+        
         
 def routine():
     mat = matrix(P)
     mat.load()
     
     #vire les A-B-C dans les item_id
-    mat.deleteItemCategories()
+    # mat.deleteItemCategories()
     
     #Generalisation au Mois
     mat.generalizeMonth()
@@ -365,28 +381,33 @@ def routine():
     print("sensitive prices :" ,m) 
     
     #Generalisation du prix
-    mat.generalizePrice([0,5,10,25,50,100,500])
+    # mat.generalizePrice([0,5,10,25,50,100,500])
     
     #Generalisation de la quantité
-    # mat.generalizeQuantity([1,10,50,100])
+    # mat.generalizeQuantity([1,10,50,100,500,1000])
+    mat.generalizeQuantityDizaine()
     
     #pseudonimiser les item id
     # mat.pseudonimazeItemId()
-    # 
+    
+    # on mélange tout les users
+    print("SHUFFLE")
+    mat.shuffleUsersPairs()
     # #pseudonimiser les user id
     # mat.pseudonimazeUserId()
     
     #del some users 
-    # mat.getFinalUsers(30,60)
+    # mat.getFinalUsers(10,80)
 
     #check les redondances et ajoute du bruits 
-    print("NUMBER OF DOUBLONS : " +str(mat.checkRedonAndDelete()))
+    # print("NUMBER OF DOUBLONS : " +str(mat.checkRedonAndDelete()))
     
     
     # dLines = mat.deletedLines()
     # print("NUMBER OF DELETED LINES : ", dLines)
     # print(" DELETED LINES : " + str(dLines/mat.getLength()*100)[:4]+"%")
     
+    print("SAUVEGARDE")
     mat.save("ouputTestprice.csv")
     
 def mainQ():
@@ -436,14 +457,14 @@ def main():
 # Temps de calcul : 33.140625
 # Temps de calcul TOTAL : 579.1875
     
-# m = matrix(P)
-# m.load()
-# m.deleteItemCategories()
-# m.generalizeDayPeriod()
-# m.generalizeMonth()
-# m.generalizeQuantity([1,10,50,100])
-# m.generalizePrice([0,5,10,25])
-#         
+m = matrix(P)
+m.load()
+m.deleteItemCategories()
+m.generalizeDayPeriod()
+m.generalizeMonth()
+m.generalizeQuantity([1,10,50,100])
+m.generalizePrice([0,5,10,25])
+        
 
 
 
