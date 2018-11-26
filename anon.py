@@ -3,7 +3,9 @@ import csv
 import os
 import hashlib
 import random
-
+import time
+import math
+import string
 
 os.chdir("C:\\Users\\Milly\\DARC-Challenge")
 
@@ -20,32 +22,46 @@ class matrix():
         line [3] -> id_item
         line [4] -> price
         line [5] -> quantity 
+        
+        month -> 12 , 01 , 02 ...,12
     """
     
     def __init__(self,pathFile):
         self.pathFile = pathFile
         self.matrice = []
         self.header = "" 
-        self.dayIdxsList =[]
+        self.monthIdxsList =[]
+        self.userList=[]
+        self.itemList=[]
         
     def load(self):
         mat = []
-        day="01"
+        month="01"
         index=0
+        users=[]
+        items=[]
         with open(self.pathFile) as file:
             reader = csv.reader(file,skipinitialspace=True, quotechar="'")
             for row in reader:                
                 mat.append(row)
-                dayTmp = row[1][-2:]
-                if(dayTmp != day and index!=0):
-                    self.dayIdxsList.append(index)
-                    day = dayTmp
+                monthTmp = row[1][5:7]
+                users.append(row[0])
+                items.append(row[3])
+                if(monthTmp != month and index!=0):
+                    self.monthIdxsList.append(index)
+                    month = monthTmp
                 index+=1
+        self.userList=list(set(users))
+        self.itemList=list(set(items))
         self.header = mat[:1][0]
         self.matrice = mat[1:]
                 
                 
-                
+    
+    def deleteItemCategories(self):
+        for line in self.matrice:
+            line[3] = line[3][:5]
+    
     def readableSave(self,outputFileName):
         with open(outputFileName, 'w') as csvfile:
             spamwriter = csv.writer(csvfile,  delimiter=';', quoting=csv.QUOTE_MINIMAL,lineterminator = '\n')
@@ -102,9 +118,12 @@ class matrix():
             catIndex = 0
             for i in range(len(_categories)):
                 if(float(line[4])<_categories[i]):
-                    line[4]=_categories[catIndex]
-                else:
+                    line[4] = _categories[catIndex]
+                    break
+                elif(float(line[4])>_categories[i]):
                     catIndex+=1
+                if(i==len(_categories)-1):
+                    line[4]=_categories[-1]
                 
     def generalizeQuantity(self,_categories):
         """_categories is a list with the upper limit of each price category"""
@@ -112,27 +131,95 @@ class matrix():
             catIndex = 0
             for i in range(len(_categories)):
                 if(float(line[5])<_categories[i]):
-                    line[5]=_categories[catIndex]
-                else:
+                    line[5] = _categories[catIndex]
+                    break
+                elif(float(line[5])>_categories[i]):
                     catIndex+=1
+                if(i==len(_categories)-1):
+                    line[5]=_categories[-1]
+                    
+
     def shuffle(self):
         random.shuffle(self.matrice)
         
-    def checkRedon(self):
-        self.matrice.insert(2,self.matrice[2])
-        self.matrice.insert(2,self.matrice[2])
-        self.matrice.insert(45,self.matrice[45])
-        self.matrice.insert(564,self.matrice[564])
+    def getSensitiveQuantity(self):
+        print("[0-10,10-50,50-100,100-500,<500]")
+        limits = [0,0,0,0,0]
+        for line in self.matrice:
+            qty = int(line[ -1])
+            if(qty<=10):
+                limits[0] = limits[0]+1
+            elif(qty>10 and qty<=50):
+                limits[1] = limits[1]+1
+            elif(qty>50 and qty<=100):
+                limits[2] = limits[2] +1
+            elif(qty>100 and qty <=500):
+                limits[3]  = limits[3] +1
+            elif(qty>500):
+                limits[4] = limits[4] +1 
+        return limits
+        
+        
+    def getSensitivePrice(self):
+        print("[0-10,10-50,50-100,100-500,<500]")
+        limits = [0,0,0,0,0]
+        
+        for line in self.matrice:
+            qty = float(line[ -2])
+            if(qty<=10):
+                limits[0] = limits[0]+1
+            elif(qty>10 and qty<=50):
+                limits[1] = limits[1]+1
+            elif(qty>50 and qty<=100):
+                limits[2] = limits[2] +1
+            elif(qty>100 and qty <=500):
+                limits[3]  = limits[3] +1
+            elif(qty>500):
+                limits[4] = limits[4] +1 
+        return limits
+    
+    
+    def noiseSensitiveQuantity(self,borneMin,borneSup=math.inf):
+        _qties=[0,5,10]
+        for line in self.matrice:
+            qty = int(line[ -1])
+            if(qty>borneMin and qty<borneSup):
+                line[-1] = random.choice(_qties)
+        
+        
+    def noiseSensitivePrice(self,borneMin,borneSup=math.inf):
+        _prices=[1,5,10,50]
+        for line in self.matrice:
+            qty = int(line[ -2])
+            if(qty>borneMin and qty<borneSup):
+                line[-2] = random.choice(_prices)
+    
+    
+    
+    def deleteSensitiveQuantity(self,borneMin,borneSup=math.inf):
+        for line in self.matrice:
+            qty = int(line[ -1])
+            if(qty>borneMin and qty<borneSup):
+                line[0] = "DEL"
+        
+    def deleteSensitivePrice(self,borneMin,borneSup=math.inf):
+        for line in self.matrice:
+            qty = float(line[ -2])
+            if(qty>borneMin and qty<borneSup):
+                line[0] = "DEL"
+                
+        
+    def checkRedonAndDelete(self):
         l=[]
         x=0
         index=0
         indexstart=0
-        month="12"
+        month="12" 
         start = time.process_time()
         for line in self.matrice:
             monthTmp = line[1][-5:-3]
             if(month!=monthTmp):
-                print("Temps d'changement idx : {}".format(time.process_time() - start))
+                print("Temps d'changement d'idx : {}".format(time.process_time() - start))
                 start = time.process_time()
                 month=monthTmp
                 print("index change")
@@ -146,27 +233,188 @@ class matrix():
                 x+=1
             index+=1
         return x
+        
+    def createRandomLine(self,date):
+        _prices=[1,5,10,50,100]
+        _qties=[0,5,10,25]
+        _hours=["10:00","14:00"]
+        user_id = random.choice(self.userList)
+        item_id = random.choice(self.itemList)
+        return [user_id,date,random.choice(_hours),item_id,str(random.choice(_prices)),str(random.choice(_qties))]
+        
+    def getAllUserTotalItem(self):
+        #Comment on peut attaquer un utilisateur plus facilement, avec un grand nombre d'achat ou un petit nombre d'achat 
+        #TODO FAIRE une fonction qui recupere le nombre d'achat d'un utilisateur par MOIS
+        usersList = [line[0] for line in self.matrice]
+        resMatrix=[]
+        f = open("userTotalItem.txt","w")
+         
+        for user in self.userList:
+            f.write(str(user) + "-"+ str(usersList.count(user))+"\n")
+        f.close()
+        
+    def getUserTotalItem(self,user):
+        usersList = [line[0] for line in self.matrice]
+        return usersList.count(user)
+                
+        
+    def getUserItemListByMonth(self,user):
+        #SELECT SUBLIST OF MONTH
+        
+        return None 
+        
+        
+    def getFinalUsers(self,borneInf, borneSup):
+        finalUserList = []
+        with open("userTotalItem.txt","r") as uFile:
+            data = uFile.readlines()
+            for line in data:
+                user_id = line.split("-")[0]
+                nb = int(line.split("-")[1])
+                if nb<borneSup and nb>borneInf:
+                    finalUserList.append(user_id)
+        for line in self.matrice:
+            if not line[0] in finalUserList:
+                line[0] = "DEL"
+    
+    
+    def getNbSupOfUsers(self,borne):
+        nb=[]
+        with open("userTotalItem.txt","r") as uFile:
+            data = uFile.readlines()
+            for line in data : 
+                nb.append(int(line.split("-")[1]))
+        return sum(i>borne for i in nb)
+    
+    
+    def getNbInfOfUsers(self,borne):
+        nb=[]
+        with open("userTotalItem.txt","r") as uFile:
+            data = uFile.readlines()
+            for line in data : 
+                nb.append(int(line.split("-")[1]))
+        return sum(i<borne for i in nb)
+    
+    
+    def checkRedonAndNoise(self):
+        l=[]
+        x=0
+        index=0
+        indexstart=0
+        month="12"
+        start = time.process_time()
+        for line in self.matrice:
+            monthTmp = line[1][-5:-3]
+            if(month!=monthTmp):
+                # print("Temps d'changement d'idx : {}".format(time.process_time() - start))
+                start = time.process_time()
+                month=monthTmp
+                # print("index change")
+                # print("INDEX --> " ,index)
+                l[:]=[]
+            p = ''.join(list(map(str,line)))
+            if(p not in l):
+                l.append(p)
+            else:
+                line = self.createRandomLine(line[1])
+                x+=1
+            index+=1
+        return x
                 
                 
                 
-                
+    def getLength(self):
+        return len(self.matrice)
+    
+    
+    def deletedLines(self):
+        counter=0
+        for line in self.matrice:
+            if "DEL" in line[0]:
+                counter+=1
+        return counter
+    
+    def getlinesIdUser(self,user):
+        subMatrix = []
+        for line in self.matrice:
+            if(line[0]==user):
+                subMatrix.append(line)
+        return subMatrix
         
             
         
-def main():
+def routine():
     mat = matrix(P)
     mat.load()
-    mat.pseudonimazeItemId()
+    
+    #vire les A-B-C dans les item_id
+    mat.deleteItemCategories()
+    
+    #Generalisation au Mois
     mat.generalizeMonth()
+    
+    #Generalisation de l'heure par période
     mat.generalizeDayPeriod()
-    mat.generalizePrice([0,5,10,25])
-    mat.generalizeQuantity([1,5,10,50,100])
-    print("NUMBER OF DOUBLONS : " +str(mat.checkRedon()))
+    
+    #on fait des truc avec les quantité trop chopable 
+    m = mat.getSensitiveQuantity()
+    print("sensitive qties :" ,m)
+    
+    #on fait des truc avec les prix trop chopable
+    m = mat.getSensitivePrice()
+    print("sensitive prices :" ,m) 
+    
+    #Generalisation du prix
+    mat.generalizePrice([0,5,10,25,50,100,500])
+    
+    #Generalisation de la quantité
+    # mat.generalizeQuantity([1,10,50,100])
+    
+    #pseudonimiser les item id
+    # mat.pseudonimazeItemId()
+    # 
+    # #pseudonimiser les user id
+    # mat.pseudonimazeUserId()
+    
+    #del some users 
+    # mat.getFinalUsers(30,60)
+
+    #check les redondances et ajoute du bruits 
+    print("NUMBER OF DOUBLONS : " +str(mat.checkRedonAndDelete()))
+    
+    
+    # dLines = mat.deletedLines()
+    # print("NUMBER OF DELETED LINES : ", dLines)
+    # print(" DELETED LINES : " + str(dLines/mat.getLength()*100)[:4]+"%")
+    
     mat.save("ouputTestprice.csv")
     
+def mainQ():
+    mat = matrix(P)
+    mat.load()
+   
+
+
+def mainP():
+    mat = matrix(P)
+    mat.load()
+    m = mat.getSensitivePrice()
+    print("sensitive :" ,m)
+    print("TOTAL DONE : ", sum(m))
+    print("MATRIX LENGHT  : ", mat.getLength())
 
 
 
+def main():
+    print("DEBUT ANONYMISATION")
+    start = time.process_time()
+    routine()
+    print("Temps d'anonymisation : {}".format(time.process_time() - start))
+    
+    print("DEBUT METRIQUES")
+    start = time.process_time()
+    metrics.main()
+    print("Temps de mesures : {}".format(time.process_time() - start))
 
 #Run for the ./data/submission.csv
 # Temps de lecture : 0.6875
@@ -188,8 +436,14 @@ def main():
 # Temps de calcul : 33.140625
 # Temps de calcul TOTAL : 579.1875
     
-
-        
+# m = matrix(P)
+# m.load()
+# m.deleteItemCategories()
+# m.generalizeDayPeriod()
+# m.generalizeMonth()
+# m.generalizeQuantity([1,10,50,100])
+# m.generalizePrice([0,5,10,25])
+#         
 
 
 
