@@ -141,11 +141,29 @@ class matrix():
         """_categories is a list with the upper limit of each price category"""
         for line in self.matrice:
             line[5] = self.roundup(int(line[5]))
+    def generalizePriceDizaine(self):
+        for line in self.matrice:
+            line[4] = self.roundup(float(line[4]))
         
 
     def shuffle(self, list ):
         random.shuffle(list)
         return list
+    
+    
+    def cardinalQties(self):
+        qties=[]
+        counter_qties=[]
+        for line in self.matrice:
+            qty = int(line[-1])
+            if qty not in qties:
+                qties.append(qty)
+                counter_qties.append(1)
+            else:
+                counter_qties[qties.index(qty)] = counter_qties[qties.index(qty)] + 1
+        return sorted([[qties[i],counter_qties[i]] for i in range(len(qties))],key=lambda qty : qty[1])
+                
+    
         
     def getSensitiveQuantity(self):
         print("[0-10,10-50,50-100,100-500,<500]")
@@ -199,7 +217,10 @@ class matrix():
             if(qty>borneMin and qty<borneSup):
                 line[-2] = random.choice(_prices)
     
-    
+    def deleteListOfSensitiveQuantity(self, listOfQty):
+        for line in self.matrice:
+            if(int(line[-1])) in listOfQty:
+                line[0] = "DEL"
     
     def deleteSensitiveQuantity(self,borneMin,borneSup=math.inf):
         for line in self.matrice:
@@ -280,7 +301,6 @@ class matrix():
                 item_id_counter.append(int(line[-1]))
                 matrixIndex.append(monthCounter)
                 timeNb.append(1)
-                
             else:
                 item_id_counter[user_item_ids.index(tmp)] =   item_id_counter[user_item_ids.index(tmp)] +int(line[-1])
                 timeNb[user_item_ids.index(tmp)] +=1
@@ -288,20 +308,21 @@ class matrix():
                 delLine+=1
             monthCounter+=1
             if monthCounter in self.monthIdxsList[1:]:
-                # res.append([[user_item_ids[x],item_id_counter[x]] for x in range(len(user_item_ids))])
+                res.append([[user_item_ids[x],item_id_counter[x]] for x in range(len(user_item_ids))])
                 print("LENGTH OF THE INDEX MATRIX",len(matrixIndex))
                 print("DELETED LINES : ",delLine)
                 print("CURRENT INDEX : ", monthCounter)
-        
-        print("END OF INIT")
+    
         for line in self.matrice:
             tmp =[sum(bytearray(line[0],'utf8')),sum(bytearray(line[3],'utf8'))]
             cnter=item_id_counter[user_item_ids.index(tmp)]
             time=timeNb[user_item_ids.index(tmp)]
             line[-1] = int(cnter/time)
-                
- 
-        
+    
+    
+    
+    
+    
         
     def getFinalUsers(self,borneInf, borneSup):
         finalUserList = []
@@ -388,6 +409,13 @@ class matrix():
             user = self.matrice[idxLine][0]
             self.matrice[idxLine][0] = userListShuffled[self.userList.index(user)]
             
+            
+    def shuffleItemPairs(self):
+        itemListShuffled = self.shuffle(self.itemList)
+        for idxLine in range(len(self.matrice)):
+            item = self.matrice[idxLine][3]
+            self.matrice[idxLine][3] = itemListShuffled[self.itemList.index(item)]
+            
     def shuffleDateHoursPrice(self):
         hours = ["14:00","10:00"]
         price = [0,1]
@@ -420,11 +448,13 @@ def routine():
     print("sensitive prices :" ,m) 
     
     #Generalisation du prix
-    mat.generalizePrice([0,5,10,25,50,100,500])
+    # mat.generalizePrice([0,5,10,25,50,100,500])
     
     #Generalisation de la quantité
     # mat.generalizeQuantity([1,10,50,100,500,1000])
     mat.generalizeQuantityDizaine()
+    
+    
     
     #pseudonimiser les item id
     # mat.pseudonimazeItemId()
@@ -436,8 +466,17 @@ def routine():
     # print("SHUFFLE USERS")
     # mat.shuffleUsersPairs()
     
-    print("SHUFFLE MONTH HOURS PRICE")
-    mat.shuffleDateHoursPrice()
+    print("SHUFFLE ITEM")
+    mat.shuffleItemPairs()
+    
+    l= mat.cardinalQties()
+    lim = 25
+    badQties = [l[i][0] for i in range(len(l)) if x[i][1]<=lim]
+    
+    mat.deleteListOfSensitiveQuantity(badQties)
+    
+    # print("SHUFFLE MONTH HOURS PRICE")
+    # mat.shuffleDateHoursPrice()
     
     # #pseudonimiser les user id
     # mat.pseudonimazeUserId()
@@ -506,6 +545,7 @@ m = matrix(P)
 m.load()
 m.generalizeDayPeriod()
 m.generalizeMonth()
+# m.monthItemGathering()
         
 
 

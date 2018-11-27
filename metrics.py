@@ -1011,10 +1011,10 @@ def mainTest():
     start = time.process_time()
     print("E1 score : {}".format(m.e1_metric()))
     # print("E2 score : {}".format(m.e2_metric()))
-    # print("E3 score : {}".format(m.e3_metric()))
-    # print("E4 score : {}".format(m.e4_metric()))
-    # print("E5 score : {}".format(m.e5_metric()))
-    # print("E6 score : {}".format(m.e6_metric()))
+    print("E3 score : {}".format(m.e3_metric()))
+    print("E4 score : {}".format(m.e4_metric()))
+    print("E5 score : {}".format(m.e5_metric()))
+    print("E6 score : {}".format(m.e6_metric()))
 
     print("Temps de calcul : {}".format(time.process_time() - start))
 
