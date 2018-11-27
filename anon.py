@@ -416,13 +416,11 @@ class matrix():
             item = self.matrice[idxLine][3]
             self.matrice[idxLine][3] = itemListShuffled[self.itemList.index(item)]
             
-    def shuffleDateHoursPrice(self):
+    def shuffleDateHours(self):
         hours = ["14:00","10:00"]
-        price = [0,1]
         month = ["12"] + [str(x).zfill(2) for x in range(1,13)]
         for idxLine in range(len(self.matrice)):
             self.matrice[idxLine][2] = random.sample(hours,1)[0]
-            self.matrice[idxLine][4] = random.sample(price,1)[0]
             self.matrice[idxLine][1] = self.matrice[idxLine][1][:5]+str(random.sample(month,1)[0])+self.matrice[idxLine][1][7:]
 
         
@@ -471,19 +469,20 @@ def routine():
     
     l= mat.cardinalQties()
     lim = 25
-    badQties = [l[i][0] for i in range(len(l)) if x[i][1]<=lim]
+    badQties = [l[i][0] for i in range(len(l)) if l[i][1]<=lim]
     
     mat.deleteListOfSensitiveQuantity(badQties)
     
     # print("SHUFFLE MONTH HOURS PRICE")
-    # mat.shuffleDateHoursPrice()
+    mat.shuffleDateHours()
     
     # #pseudonimiser les user id
     # mat.pseudonimazeUserId()
     
     
     #del some users 
-    # mat.getFinalUsers(10,80)
+    # print("FINAL USERS")
+    # mat.getFinalUsers(5,90)
     
 
     #check les redondances et ajoute du bruits 
