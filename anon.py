@@ -6,7 +6,6 @@ import random
 import time
 import math
 import string
-import metrics
 os.chdir("C:\\Users\\Milly\\DARC-Challenge")
 
 # Path to the csv
@@ -205,13 +204,13 @@ class matrix():
     def deleteSensitiveQuantity(self,borneMin,borneSup=math.inf):
         for line in self.matrice:
             qty = int(line[ -1])
-            if(qty>borneMin and qty<borneSup):
+            if(qty<borneMin or qty>borneSup):
                 line[0] = "DEL"
         
     def deleteSensitivePrice(self,borneMin,borneSup=math.inf):
         for line in self.matrice:
             qty = float(line[ -2])
-            if(qty>borneMin and qty<borneSup):
+            if(qty<borneMin or qty>borneSup):
                 line[0] = "DEL"
                 
         
@@ -262,12 +261,46 @@ class matrix():
     def getUserTotalItem(self,user):
         usersList = [line[0] for line in self.matrice]
         return usersList.count(user)
+    
+    
+    def monthItemGathering(self):
+        res=[]
+        tmp=[]
+        user_item_ids=[]
+        item_id_counter=[]
+        matrixIndex=[]
+        timeNb=[]
+        lxd=[]
+        monthCounter=0
+        delLine=0
+        for line in self.matrice:
+            tmp =[sum(bytearray(line[0],'utf8')),sum(bytearray(line[3],'utf8'))]
+            if tmp not in user_item_ids:
+                user_item_ids.append(tmp)
+                item_id_counter.append(int(line[-1]))
+                matrixIndex.append(monthCounter)
+                timeNb.append(1)
                 
+            else:
+                item_id_counter[user_item_ids.index(tmp)] =   item_id_counter[user_item_ids.index(tmp)] +int(line[-1])
+                timeNb[user_item_ids.index(tmp)] +=1
+                line[-1]=0
+                delLine+=1
+            monthCounter+=1
+            if monthCounter in self.monthIdxsList[1:]:
+                # res.append([[user_item_ids[x],item_id_counter[x]] for x in range(len(user_item_ids))])
+                print("LENGTH OF THE INDEX MATRIX",len(matrixIndex))
+                print("DELETED LINES : ",delLine)
+                print("CURRENT INDEX : ", monthCounter)
         
-    def getUserItemListByMonth(self,user):
-        #SELECT SUBLIST OF MONTH
-        
-        return None 
+        print("END OF INIT")
+        for line in self.matrice:
+            tmp =[sum(bytearray(line[0],'utf8')),sum(bytearray(line[3],'utf8'))]
+            cnter=item_id_counter[user_item_ids.index(tmp)]
+            time=timeNb[user_item_ids.index(tmp)]
+            line[-1] = int(cnter/time)
+                
+ 
         
         
     def getFinalUsers(self,borneInf, borneSup):
@@ -354,10 +387,16 @@ class matrix():
         for idxLine in range(len(self.matrice)):
             user = self.matrice[idxLine][0]
             self.matrice[idxLine][0] = userListShuffled[self.userList.index(user)]
-        
             
-            
-        
+    def shuffleDateHoursPrice(self):
+        hours = ["14:00","10:00"]
+        price = [0,1]
+        month = ["12"] + [str(x).zfill(2) for x in range(1,13)]
+        for idxLine in range(len(self.matrice)):
+            self.matrice[idxLine][2] = random.sample(hours,1)[0]
+            self.matrice[idxLine][4] = random.sample(price,1)[0]
+            self.matrice[idxLine][1] = self.matrice[idxLine][1][:5]+str(random.sample(month,1)[0])+self.matrice[idxLine][1][7:]
+
         
 def routine():
     mat = matrix(P)
@@ -381,7 +420,7 @@ def routine():
     print("sensitive prices :" ,m) 
     
     #Generalisation du prix
-    # mat.generalizePrice([0,5,10,25,50,100,500])
+    mat.generalizePrice([0,5,10,25,50,100,500])
     
     #Generalisation de la quantité
     # mat.generalizeQuantity([1,10,50,100,500,1000])
@@ -390,22 +429,31 @@ def routine():
     #pseudonimiser les item id
     # mat.pseudonimazeItemId()
     
+    #regrp le total des items par mois par user
+    mat.monthItemGathering()
+    
     # on mélange tout les users
-    print("SHUFFLE")
-    mat.shuffleUsersPairs()
+    # print("SHUFFLE USERS")
+    # mat.shuffleUsersPairs()
+    
+    print("SHUFFLE MONTH HOURS PRICE")
+    mat.shuffleDateHoursPrice()
+    
     # #pseudonimiser les user id
     # mat.pseudonimazeUserId()
     
+    
     #del some users 
     # mat.getFinalUsers(10,80)
+    
 
     #check les redondances et ajoute du bruits 
     # print("NUMBER OF DOUBLONS : " +str(mat.checkRedonAndDelete()))
     
     
-    # dLines = mat.deletedLines()
-    # print("NUMBER OF DELETED LINES : ", dLines)
-    # print(" DELETED LINES : " + str(dLines/mat.getLength()*100)[:4]+"%")
+    dLines = mat.deletedLines()
+    print("NUMBER OF DELETED LINES : ", dLines)
+    print(" DELETED LINES : " + str(dLines/mat.getLength()*100)[:4]+"%")
     
     print("SAUVEGARDE")
     mat.save("ouputTestprice.csv")
@@ -432,10 +480,6 @@ def main():
     routine()
     print("Temps d'anonymisation : {}".format(time.process_time() - start))
     
-    print("DEBUT METRIQUES")
-    start = time.process_time()
-    metrics.main()
-    print("Temps de mesures : {}".format(time.process_time() - start))
 
 #Run for the ./data/submission.csv
 # Temps de lecture : 0.6875
@@ -457,15 +501,12 @@ def main():
 # Temps de calcul : 33.140625
 # Temps de calcul TOTAL : 579.1875
     
+        
 m = matrix(P)
 m.load()
-m.deleteItemCategories()
 m.generalizeDayPeriod()
 m.generalizeMonth()
-m.generalizeQuantity([1,10,50,100])
-m.generalizePrice([0,5,10,25])
         
-
 
 
 
