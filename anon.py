@@ -531,7 +531,7 @@ def routine():
     # mat.shuffleItemPairs()
     
     l= mat.cardinalQties()
-    limSup = 100
+    limSup = 50
     badQties = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
     print("HIDE SENSITIVE QTY ")
     mat.deleteListOfSensitiveQuantity(badQties)
@@ -616,21 +616,21 @@ def main():
 
 
 # BEGGININNG OF MAIN TEST 
-# Temps de lecture : 0.5625
-# Temps d'initialisation : 0.3125
-# E4 score : 0.1692373174
-# E5 score : 0.0334212032
+# Temps de lecture : 0.609375
+# Temps d'initialisation : 0.265625
+# E4 score : 0.1666682237
+# E5 score : 0.1046292784
 # E6 score : 0.0
-# Temps de calcul : 31.015625
-# Temps d'initialisation : 44.140625
-# S1 score : 0.047774
-# S2 score : 0.021937
-# S3 score : 0.168833
-# S4 score : 0.237082
-# S5 score : 0.071336
-# S6 score : 0.141534
-# Temps de calcul : 32.3125
-# Temps de calcul TOTAL : 108.34375
+# Temps de calcul : 35.96875
+# Temps d'initialisation : 52.640625
+# S1 score : 0.039487
+# S2 score : 0.019581
+# S3 score : 0.171839
+# S4 score : 0.205964
+# S5 score : 0.063373
+# S6 score : 0.107735
+# Temps de calcul : 39.578125
+# Temps de calcul TOTAL : 129.0625
     
         
 # m = matrix(P)
@@ -642,7 +642,7 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     mainTest()
 
     
