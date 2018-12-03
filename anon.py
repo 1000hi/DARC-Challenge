@@ -91,11 +91,44 @@ class matrix():
         for line in self.matrice:
             week = str((31%7 - (int(line[1][-2:])-1)%7)*7-1).zfill(2)
             line[1] = line[1][:-2] + week
-            
+    
+    def cardinalDay(self,liste):
+        days=[]
+        counter_day=[]
+        for line in liste:
+            day = int(line[1][-2:])
+            if day not in days:
+                days.append(day)
+                counter_day.append(1)
+            else:
+                counter_day[days.index(day)] = counter_day[days.index(day)] + 1
+        # print(days)
+        return sorted([[days[i],counter_day[i]] for i in range(len(days))],key=lambda day : day[1])
         
     def generalizeMonth(self):
-        for line in self.matrice:
-            line[1] = line[1][:-2]+"01"
+        idxCounter = 2
+        idxMountCounter = 0 
+        self.monthIdxsList[0] = 0
+        for idxMonth in range(len(self.monthIdxsList)-1):
+            debIdx =self.monthIdxsList[idxMonth]
+            finIdx = self.monthIdxsList[idxMonth+1]
+            res =self.cardinalDay( self.matrice[debIdx:finIdx])
+            print(res)
+            res = res[-(int(len(res)*0.35)):]
+            print(res)
+            daysRes = [x[0] for x in res]
+            for line in self.matrice[debIdx:finIdx]:
+                day = int(line[1][-2:])
+                if day not in daysRes:
+                    line[1] = line[1][:-2]+str(res[-(day%len(res))][0]).zfill(2)
+                    
+            print("APRES COUP" ,self.cardinalDay( self.matrice[debIdx:finIdx]))
+            # print(res)
+            
+            # day = int(line[1][-2:])
+            # line[1] = line[1][:-2]+str(int(day/7)*7+1)
+   
+            
             
     def generalizeDayPeriod(self):
         """
@@ -147,7 +180,7 @@ class matrix():
     
     def generalizePriceRound(self):
         for line in self.matrice:
-            line[4] = int(float(line[4]))
+            line[4] = round(float(line[4]),1)
         
 
     def shuffle(self, list ):
@@ -169,7 +202,18 @@ class matrix():
             else:
                 counter_qties[qties.index(qty)] = counter_qties[qties.index(qty)] + 1
         return sorted([[qties[i],counter_qties[i]] for i in range(len(qties))],key=lambda qty : qty[1])
-    
+        
+    def cardinalPrice(self):
+        price=[]
+        counter_price=[]
+        for line in self.matrice:
+            pr = float(line[-2])
+            if pr not in price:
+                price.append(pr)
+                counter_price.append(1)
+            else:
+                counter_price[price.index(pr)] = counter_price[price.index(pr)] + 1
+        return sorted([[price[i],counter_price[i]] for i in range(len(price))],key=lambda pr : pr[1])
     
     def cardinalHours(self):
         hours=[]
@@ -229,18 +273,18 @@ class matrix():
                 line[-1] = random.choice(_qties)
         
         
-    def noiseSensitivePrice(self,borneMin,borneSup=math.inf):
-        _prices=[1,5,10,50]
+    def noiseSensitivePrice(self,listOfQty):
         for line in self.matrice:
-            qty = int(line[ -2])
-            if(qty>borneMin and qty<borneSup):
-                line[-2] = random.choice(_prices)
+            if(float(line[-2])) in listOfQty:
+                # line[-1] = self.myround(float(line[-1]),12)
+                line[-2] = int(float(line[-2]))
     
     def deleteListOfSensitiveQuantity(self, listOfQty):
         for line in self.matrice:
             if(int(line[-1])) in listOfQty:
                 # line[-1] = self.myround(float(line[-1]),12)
                 line[-1] = 12
+                
     
     def deleteSensitiveQuantity(self,borneMin,borneSup=math.inf):
         for line in self.matrice:
@@ -487,10 +531,19 @@ def routine():
     # mat.shuffleItemPairs()
     
     l= mat.cardinalQties()
-    limSup = 50
+    limSup = 100
     badQties = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
     print("HIDE SENSITIVE QTY ")
     mat.deleteListOfSensitiveQuantity(badQties)
+    
+    
+    
+    
+    l=mat.cardinalPrice()
+    limSup = 8000
+    badPrice = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
+    print("HIDE SENSITIVE QTY ")
+    mat.noiseSensitivePrice(badPrice)
     
     # print("SHUFFLE MONTH HOURS PRICE")
     # mat.shuffleDateHours()
@@ -563,33 +616,33 @@ def main():
 
 
 # BEGGININNG OF MAIN TEST 
-# Temps de lecture : 0.546875
-# Temps d'initialisation : 0.28125
-# E1 score : 0.0011035661544664223
-# E2 score : 0.002452581027938459
-# E3 score : 0.0
-# E4 score : 0.4514872461
-# E5 score : 0.3917684141
+# Temps de lecture : 0.5625
+# Temps d'initialisation : 0.3125
+# E4 score : 0.1692373174
+# E5 score : 0.0334212032
 # E6 score : 0.0
-# Temps de calcul : 513.5625
-# Temps d'initialisation : 41.28125
-# S1 score : 0.001137
-# S2 score : 0.0
-# S3 score : 0.180695
-# S4 score : 0.005931
-# S5 score : 0.0
-# S6 score : 0.0
-# Temps de calcul : 31.109375
-# Temps de calcul TOTAL : 586.78125
+# Temps de calcul : 31.015625
+# Temps d'initialisation : 44.140625
+# S1 score : 0.047774
+# S2 score : 0.021937
+# S3 score : 0.168833
+# S4 score : 0.237082
+# S5 score : 0.071336
+# S6 score : 0.141534
+# Temps de calcul : 32.3125
+# Temps de calcul TOTAL : 108.34375
     
         
-m = matrix(P)
-m.load()
-# m.generalizeDayPeriod()
-m.generalizeMonth()
+# m = matrix(P)
+# m.load()
+# # m.generalizeDayPeriod()
+# m.generalizeMonth()
 # m.monthItemGathering()
         
 
 
+if __name__ == "__main__":
+    # main()
+    mainTest()
 
     
