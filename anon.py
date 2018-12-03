@@ -9,7 +9,8 @@ import string
 os.chdir("C:\\Users\\Milly\\DARC-Challenge")
 
 # Path to the csv
-P= "./data/submission.csv"
+# P= "./data/submission.csv"
+P= "./data/ground_truth.csv"
 #id_user|date|hours|id_item|price|qty
 
 
@@ -41,7 +42,8 @@ class matrix():
         items=[]
         with open(self.pathFile) as file:
             reader = csv.reader(file,skipinitialspace=True, quotechar="'")
-            for row in reader:                
+            for row in reader:     
+                row[0] = 'KAKKAKAK'+row[0]
                 mat.append(row)
                 monthTmp = row[1][5:7]
                 users.append(row[0])
@@ -105,11 +107,12 @@ class matrix():
         - 14:00 for afternoon 
         """
         for line in self.matrice:
-            hours = int(line[2][:2])
-            if(hours<12):
-                line[2] = "10:00"
-            else:
-                line[2] = "14:00"
+            hours = line[2][:2]
+            line[2] = hours+":00"
+            # if(hours<12):
+            #     line[2] = "10:00"
+            # else:
+            #     line[2] = "14:00"
                 
     def generalizePrice(self,_categories):
         """_categories is a list with the upper limit of each price category"""
@@ -137,19 +140,23 @@ class matrix():
                 if(i==len(_categories)-1):
                     line[5]=_categories[-1]
                     
-    def generalizeQuantityDizaine(self):
+    def generalizeQuantity(self,r):
         """_categories is a list with the upper limit of each price category"""
         for line in self.matrice:
-            line[5] = self.roundup(int(line[5]))
-    def generalizePriceDizaine(self):
+            line[5] = self.myround(int(line[5]),r)
+    
+    def generalizePriceRound(self):
         for line in self.matrice:
-            line[4] = self.roundup(float(line[4]))
+            line[4] = int(float(line[4]))
         
 
     def shuffle(self, list ):
         random.shuffle(list)
         return list
     
+    
+    def myround(self,x, base=5):
+        return int(base * round(float(x)/base))
     
     def cardinalQties(self):
         qties=[]
@@ -162,7 +169,19 @@ class matrix():
             else:
                 counter_qties[qties.index(qty)] = counter_qties[qties.index(qty)] + 1
         return sorted([[qties[i],counter_qties[i]] for i in range(len(qties))],key=lambda qty : qty[1])
-                
+    
+    
+    def cardinalHours(self):
+        hours=[]
+        counter_hours=[]
+        for line in self.matrice:
+            hour = int(line[2][:2])
+            if hour not in hours:
+                hours.append(hour)
+                counter_hours.append(1)
+            else:
+                counter_hours[hours.index(hour)] = counter_hours[hours.index(hour)] + 1
+        return sorted([[hours[i],counter_hours[i]] for i in range(len(hours))],key=lambda hour : hour[0])
     
         
     def getSensitiveQuantity(self):
@@ -220,7 +239,7 @@ class matrix():
     def deleteListOfSensitiveQuantity(self, listOfQty):
         for line in self.matrice:
             if(int(line[-1])) in listOfQty:
-                line[0] = "DEL"
+                line[-1] = self.myround(float(line[-1]),12)
     
     def deleteSensitiveQuantity(self,borneMin,borneSup=math.inf):
         for line in self.matrice:
@@ -245,11 +264,11 @@ class matrix():
         for line in self.matrice:
             monthTmp = line[1][-5:-3]
             if(month!=monthTmp):
-                print("Temps d'changement d'idx : {}".format(time.process_time() - start))
+                # print("Temps d'changement d'idx : {}".format(time.process_time() - start))
                 start = time.process_time()
                 month=monthTmp
-                print("index change")
-                print("INDEX --> " ,index)
+                # print("index change")
+                # print("INDEX --> " ,index)
                 l[:]=[]
             p = ''.join(list(map(str,line)))
             if(p not in l):
@@ -270,7 +289,6 @@ class matrix():
         
     def getAllUserTotalItem(self):
         #Comment on peut attaquer un utilisateur plus facilement, avec un grand nombre d'achat ou un petit nombre d'achat 
-        #TODO FAIRE une fonction qui recupere le nombre d'achat d'un utilisateur par MOIS
         usersList = [line[0] for line in self.matrice]
         resMatrix=[]
         f = open("userTotalItem.txt","w")
@@ -317,7 +335,7 @@ class matrix():
             tmp =[sum(bytearray(line[0],'utf8')),sum(bytearray(line[3],'utf8'))]
             cnter=item_id_counter[user_item_ids.index(tmp)]
             time=timeNb[user_item_ids.index(tmp)]
-            line[-1] = int(cnter/time)
+            line[-1] = self.myround(int(cnter/time),12)
     
     
     
@@ -337,8 +355,6 @@ class matrix():
             if not line[0] in finalUserList:
                 line[0] = "DEL"
                 
-    def roundup(self,x):
-        return int(math.ceil(x / 10.0)) * 10
     
     def getNbSupOfUsers(self,borne):
         nb=[]
@@ -431,10 +447,11 @@ def routine():
     #vire les A-B-C dans les item_id
     # mat.deleteItemCategories()
     
-    #Generalisation au Mois
+
+    print('Generalisation au Mois')
     mat.generalizeMonth()
     
-    #Generalisation de l'heure par période
+    print("Generalisation de l'heure par période")
     mat.generalizeDayPeriod()
     
     #on fait des truc avec les quantité trop chopable 
@@ -447,10 +464,11 @@ def routine():
     
     #Generalisation du prix
     # mat.generalizePrice([0,5,10,25,50,100,500])
+    mat.generalizePriceRound()
     
-    #Generalisation de la quantité
+    print('Generalisation de la quantité')
     # mat.generalizeQuantity([1,10,50,100,500,1000])
-    mat.generalizeQuantityDizaine()
+    mat.generalizeQuantity(5)
     
     
     
@@ -458,23 +476,23 @@ def routine():
     # mat.pseudonimazeItemId()
     
     #regrp le total des items par mois par user
-    mat.monthItemGathering()
+    # mat.monthItemGathering()
     
     # on mélange tout les users
     # print("SHUFFLE USERS")
     # mat.shuffleUsersPairs()
-    
-    print("SHUFFLE ITEM")
-    mat.shuffleItemPairs()
+     
+    print("SHUFFLE ITEM")    
+    # mat.shuffleItemPairs()
     
     l= mat.cardinalQties()
-    lim = 25
-    badQties = [l[i][0] for i in range(len(l)) if l[i][1]<=lim]
-    
+    limSup = 25
+    badQties = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
+    print("HIDE SENSITIVE QTY ")
     mat.deleteListOfSensitiveQuantity(badQties)
     
     # print("SHUFFLE MONTH HOURS PRICE")
-    mat.shuffleDateHours()
+    # mat.shuffleDateHours()
     
     # #pseudonimiser les user id
     # mat.pseudonimazeUserId()
@@ -486,6 +504,7 @@ def routine():
     
 
     #check les redondances et ajoute du bruits 
+    # print("TCHEK DOUBLONS AND DEL")
     # print("NUMBER OF DOUBLONS : " +str(mat.checkRedonAndDelete()))
     
     
@@ -518,31 +537,55 @@ def main():
     routine()
     print("Temps d'anonymisation : {}".format(time.process_time() - start))
     
+    
 
 #Run for the ./data/submission.csv
-# Temps de lecture : 0.6875
-# Temps d'initialisation : 0.25
+# BEGGININNG OF MAIN TEST 
+# Temps de lecture : 0.5
+# Temps d'initialisation : 0.203125
 # E1 score : 0.6972675019267774
 # E2 score : 0.6603458611710322
 # E3 score : 0.5354496037955323
 # E4 score : 0.0
-# E5 score : 0.9107717048
+# E5 score : 0.0
 # E6 score : 0.0
-# Temps de calcul : 501.484375
-# Temps d'initialisation : 43.625
-# S1 score : 0.785054
-# S2 score : 0.751011
-# S3 score : 0.788623
-# S4 score : 0.897004
-# S5 score : 0.758583
-# S6 score : 0.814084
-# Temps de calcul : 33.140625
-# Temps de calcul TOTAL : 579.1875
+# Temps de calcul : 452.625
+# Temps d'initialisation : 35.34375
+# S1 score : 0.150552
+# S2 score : 0.039162
+# S3 score : 0.16794
+# S4 score : 0.593923
+# S5 score : 0.197189
+# S6 score : 0.659327
+# Temps de calcul : 29.203125
+# Temps de calcul TOTAL : 517.875
+
+
+#Previous run 
+# BEGGININNG OF MAIN TEST 
+# Temps de lecture : 0.53125
+# Temps d'initialisation : 0.25
+# E1 score : 0.038094047446514005
+# E2 score : 0.014614259174183278
+# E3 score : 0.0016457484100351161
+# E4 score : 0.4514872461
+# E5 score : 0.0
+# E6 score : 0.0038
+# Temps de calcul : 463.234375
+# Temps d'initialisation : 38.84375
+# S1 score : 0.001012
+# S2 score : 0.049106
+# S3 score : 0.169845
+# S4 score : 0.004809
+# S5 score : 0.198194
+# S6 score : 0.007931
+# Temps de calcul : 29.96875
+# Temps de calcul TOTAL : 532.828125
     
         
 m = matrix(P)
 m.load()
-m.generalizeDayPeriod()
+# m.generalizeDayPeriod()
 m.generalizeMonth()
 # m.monthItemGathering()
         

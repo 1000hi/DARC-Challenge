@@ -926,7 +926,7 @@ def main():
     M = pd.DataFrame(M, columns=M_COL.values())
     
     # AT = pd.read_csv('./data/submission.csv', sep=',', engine='c', na_filter=False, low_memory=False)
-    AT = pd.read_csv('ouputTestprice.csv', sep=',', engine='c', na_filter=False, low_memory=False)
+    AT = pd.read_csv('./data/submission.csv', sep=',', engine='c', na_filter=False, low_memory=False)
     AT.columns = T_COL.values()
 
     AT.columns = AT.columns.sort_values()
@@ -1010,7 +1010,7 @@ def mainTest():
 
     start = time.process_time()
     print("E1 score : {}".format(m.e1_metric()))
-    # print("E2 score : {}".format(m.e2_metric()))
+    print("E2 score : {}".format(m.e2_metric()))
     print("E3 score : {}".format(m.e3_metric()))
     print("E4 score : {}".format(m.e4_metric()))
     print("E5 score : {}".format(m.e5_metric()))
