@@ -140,10 +140,10 @@ class matrix():
                 if(i==len(_categories)-1):
                     line[5]=_categories[-1]
                     
-    def generalizeQuantity(self,r):
+    def generalizeQuantity(self):
         """_categories is a list with the upper limit of each price category"""
         for line in self.matrice:
-            line[5] = self.myround(int(line[5]),r)
+            line[5] = self.myround(int(line[5]))
     
     def generalizePriceRound(self):
         for line in self.matrice:
@@ -239,7 +239,8 @@ class matrix():
     def deleteListOfSensitiveQuantity(self, listOfQty):
         for line in self.matrice:
             if(int(line[-1])) in listOfQty:
-                line[-1] = self.myround(float(line[-1]),12)
+                # line[-1] = self.myround(float(line[-1]),12)
+                line[-1] = 12
     
     def deleteSensitiveQuantity(self,borneMin,borneSup=math.inf):
         for line in self.matrice:
@@ -468,7 +469,7 @@ def routine():
     
     print('Generalisation de la quantité')
     # mat.generalizeQuantity([1,10,50,100,500,1000])
-    mat.generalizeQuantity(5)
+    # mat.generalizeQuantity()
     
     
     
@@ -482,11 +483,11 @@ def routine():
     # print("SHUFFLE USERS")
     # mat.shuffleUsersPairs()
      
-    print("SHUFFLE ITEM")    
+    # print("SHUFFLE ITEM")    
     # mat.shuffleItemPairs()
     
     l= mat.cardinalQties()
-    limSup = 25
+    limSup = 50
     badQties = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
     print("HIDE SENSITIVE QTY ")
     mat.deleteListOfSensitiveQuantity(badQties)
@@ -561,26 +562,25 @@ def main():
 # Temps de calcul TOTAL : 517.875
 
 
-#Previous run 
 # BEGGININNG OF MAIN TEST 
-# Temps de lecture : 0.53125
-# Temps d'initialisation : 0.25
-# E1 score : 0.038094047446514005
-# E2 score : 0.014614259174183278
-# E3 score : 0.0016457484100351161
+# Temps de lecture : 0.546875
+# Temps d'initialisation : 0.28125
+# E1 score : 0.0011035661544664223
+# E2 score : 0.002452581027938459
+# E3 score : 0.0
 # E4 score : 0.4514872461
-# E5 score : 0.0
-# E6 score : 0.0038
-# Temps de calcul : 463.234375
-# Temps d'initialisation : 38.84375
-# S1 score : 0.001012
-# S2 score : 0.049106
-# S3 score : 0.169845
-# S4 score : 0.004809
-# S5 score : 0.198194
-# S6 score : 0.007931
-# Temps de calcul : 29.96875
-# Temps de calcul TOTAL : 532.828125
+# E5 score : 0.3917684141
+# E6 score : 0.0
+# Temps de calcul : 513.5625
+# Temps d'initialisation : 41.28125
+# S1 score : 0.001137
+# S2 score : 0.0
+# S3 score : 0.180695
+# S4 score : 0.005931
+# S5 score : 0.0
+# S6 score : 0.0
+# Temps de calcul : 31.109375
+# Temps de calcul TOTAL : 586.78125
     
         
 m = matrix(P)
