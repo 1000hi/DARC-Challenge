@@ -114,7 +114,7 @@ class matrix():
             finIdx = self.monthIdxsList[idxMonth+1]
             res =self.cardinalDay( self.matrice[debIdx:finIdx])
             # print(res)
-            res = res[-(int(len(res)*0.35)):]
+            res = res[-(int(len(res)*0.33)):]
             # print(res)
             daysRes = [x[0] for x in res]
             for line in self.matrice[debIdx:finIdx]:
@@ -279,7 +279,7 @@ class matrix():
             if(float(line[-2])) in listOfQty:
                 # line[-1] = self.myround(float(line[-1]),12)
                 line[-2] = int(float(line[-2]))
-                line[0] = "DEL"
+                # line[0] = "DEL"
     
     def deleteListOfSensitiveQuantity(self, listOfQty):
         for line in self.matrice:
@@ -339,7 +339,6 @@ class matrix():
         usersList = [line[0] for line in self.matrice]
         resMatrix=[]
         f = open("userTotalItem.txt","w")
-         
         for user in self.userList:
             f.write(str(user) + "-"+ str(usersList.count(user))+"\n")
         f.close()
@@ -535,7 +534,7 @@ def routine():
     # mat.shuffleItemPairs()
     
     l= mat.cardinalQties()
-    limSup = 100
+    limSup = 25
     badQties = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
     print("HIDE SENSITIVE QTY : ",limSup)
     mat.deleteListOfSensitiveQuantity(badQties)
@@ -544,14 +543,15 @@ def routine():
     
     
     l=mat.cardinalPrice()
-    limSup = 2500
+    limSup = 9000
     badPrice = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
+    print("deleted line in total" , sum([l[i][1] for i in range(len(l)) if l[i][1] <=limSup]))
     print("HIDE SENSITIVE PRICE  : ",limSup)
     mat.noiseSensitivePrice(badPrice)
     
     
     print("SHUFFLE MONTH HOURS ")
-    mat.shuffleDateHours()
+    # mat.shuffleDateHours()
     
     # #pseudonimiser les user id
     # mat.pseudonimazeUserId()
