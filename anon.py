@@ -113,9 +113,9 @@ class matrix():
             debIdx =self.monthIdxsList[idxMonth]
             finIdx = self.monthIdxsList[idxMonth+1]
             res =self.cardinalDay( self.matrice[debIdx:finIdx])
-            print(res)
+            # print(res)
             res = res[-(int(len(res)*0.35)):]
-            print(res)
+            # print(res)
             daysRes = [x[0] for x in res]
             for line in self.matrice[debIdx:finIdx]:
                 day = int(line[1][-2:])
@@ -528,11 +528,11 @@ def routine():
     # mat.monthItemGathering()
     
     # on mélange tout les users
-    # print("SHUFFLE USERS")
+    print("SHUFFLE USERS")
     mat.shuffleUsersPairs()
      
-    # print("SHUFFLE ITEM")    
-    # mat.shuffleItemPairs()
+    print("SHUFFLE ITEM")    
+    mat.shuffleItemPairs()
     
     l= mat.cardinalQties()
     limSup = 100
