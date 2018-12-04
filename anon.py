@@ -528,11 +528,11 @@ def routine():
     # mat.monthItemGathering()
     
     # on mélange tout les users
-    print("SHUFFLE USERS")
-    mat.shuffleUsersPairs()
+    # print("SHUFFLE USERS")
+    # mat.shuffleUsersPairs()
      
-    print("SHUFFLE ITEM")    
-    mat.shuffleItemPairs()
+    # print("SHUFFLE ITEM")    
+    # mat.shuffleItemPairs()
     
     l= mat.cardinalQties()
     limSup = 100
