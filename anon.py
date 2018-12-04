@@ -140,12 +140,13 @@ class matrix():
         - 14:00 for afternoon 
         """
         for line in self.matrice:
-            hours = line[2][:2]
-            line[2] = hours+":00"
-            # if(hours<12):
-            #     line[2] = "10:00"
-            # else:
-            #     line[2] = "14:00"
+            hours = int(line[2][:2])
+            # hours = line[2][:2]
+            # line[2] = hours+":00"
+            if(hours<12):
+                line[2] = "10:00"
+            else:
+                line[2] = "14:00"
                 
     def generalizePrice(self,_categories):
         """_categories is a list with the upper limit of each price category"""
@@ -278,6 +279,7 @@ class matrix():
             if(float(line[-2])) in listOfQty:
                 # line[-1] = self.myround(float(line[-1]),12)
                 line[-2] = int(float(line[-2]))
+                line[0] = "DEL"
     
     def deleteListOfSensitiveQuantity(self, listOfQty):
         for line in self.matrice:
@@ -481,9 +483,13 @@ class matrix():
         hours = ["14:00","10:00"]
         month = ["12"] + [str(x).zfill(2) for x in range(1,13)]
         for idxLine in range(len(self.matrice)):
-            self.matrice[idxLine][2] = random.sample(hours,1)[0]
+            self.matrice[idxLine][2] = str(random.randint(1,10)).zfill(2)+":00"
             self.matrice[idxLine][1] = self.matrice[idxLine][1][:5]+str(random.sample(month,1)[0])+self.matrice[idxLine][1][7:]
-
+    def lilCobain(self,nb):
+        id=0
+        for idx in range(len(self.monthIdxsList)-1):
+            for x in range(nb):
+                self.matrice[random.randint(self.monthIdxsList[idx],self.monthIdxsList[idx+1])][0] = "DEL"
         
 def routine():
     mat = matrix(P)
@@ -515,8 +521,6 @@ def routine():
     # mat.generalizeQuantity([1,10,50,100,500,1000])
     # mat.generalizeQuantity()
     
-    
-    
     #pseudonimiser les item id
     # mat.pseudonimazeItemId()
     
@@ -525,7 +529,7 @@ def routine():
     
     # on mélange tout les users
     # print("SHUFFLE USERS")
-    # mat.shuffleUsersPairs()
+    mat.shuffleUsersPairs()
      
     # print("SHUFFLE ITEM")    
     # mat.shuffleItemPairs()
@@ -533,20 +537,21 @@ def routine():
     l= mat.cardinalQties()
     limSup = 100
     badQties = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
-    print("HIDE SENSITIVE QTY ")
+    print("HIDE SENSITIVE QTY : ",limSup)
     mat.deleteListOfSensitiveQuantity(badQties)
     
     
     
     
     l=mat.cardinalPrice()
-    limSup = 9000
+    limSup = 2500
     badPrice = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
-    print("HIDE SENSITIVE QTY ")
+    print("HIDE SENSITIVE PRICE  : ",limSup)
     mat.noiseSensitivePrice(badPrice)
     
-    # print("SHUFFLE MONTH HOURS PRICE")
-    # mat.shuffleDateHours()
+    
+    print("SHUFFLE MONTH HOURS ")
+    mat.shuffleDateHours()
     
     # #pseudonimiser les user id
     # mat.pseudonimazeUserId()
@@ -562,12 +567,14 @@ def routine():
     # print("NUMBER OF DOUBLONS : " +str(mat.checkRedonAndDelete()))
     
     
+    mat.lilCobain(50)
+    
     dLines = mat.deletedLines()
     print("NUMBER OF DELETED LINES : ", dLines)
     print(" DELETED LINES : " + str(dLines/mat.getLength()*100)[:4]+"%")
     
     print("SAUVEGARDE")
-    mat.save("ouputTestprice.csv")
+    mat.save("ouput.csv")
     
 def mainQ():
     mat = matrix(P)
@@ -616,25 +623,25 @@ def main():
 
 
 # BEGGININNG OF MAIN TEST 
-# Temps de lecture : 0.609375
+# Temps de lecture : 0.53125
 # Temps d'initialisation : 0.265625
 # E4 score : 0.1666682237
-# E5 score : 0.1046292784
-# E6 score : 0.0
-# Temps de calcul : 35.96875
-# Temps d'initialisation : 52.640625
-# S1 score : 0.039487
-# S2 score : 0.019581
-# S3 score : 0.171839
-# S4 score : 0.205964
-# S5 score : 0.063373
-# S6 score : 0.107735
-# Temps de calcul : 39.578125
-# Temps de calcul TOTAL : 129.0625
+# E5 score : 0.0483248711
+# E6 score : 0.1081
+# Temps de calcul : 29.1875
+# Temps d'initialisation : 63.015625
+# S1 score : 0.035304
+# S2 score : 0.017544
+# S3 score : 0.173489
+# S4 score : 0.197747
+# S5 score : 0.063028
+# S6 score : 0.089669
+# Temps de calcul : 28.953125
+# Temps de calcul TOTAL : 121.953125
     
         
-# m = matrix(P)
-# m.load()
+m = matrix(P)
+m.load()
 # # m.generalizeDayPeriod()
 # m.generalizeMonth()
 # m.monthItemGathering()
