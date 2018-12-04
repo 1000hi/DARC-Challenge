@@ -283,7 +283,7 @@ class matrix():
         for line in self.matrice:
             if(int(line[-1])) in listOfQty:
                 # line[-1] = self.myround(float(line[-1]),12)
-                line[-1] = 12
+                line[0] ="DEL"
                 
     
     def deleteSensitiveQuantity(self,borneMin,borneSup=math.inf):
@@ -511,7 +511,7 @@ def routine():
     # mat.generalizePrice([0,5,10,25,50,100,500])
     mat.generalizePriceRound()
     
-    print('Generalisation de la quantité')
+    # print('Generalisation de la quantité')q
     # mat.generalizeQuantity([1,10,50,100,500,1000])
     # mat.generalizeQuantity()
     
@@ -531,7 +531,7 @@ def routine():
     # mat.shuffleItemPairs()
     
     l= mat.cardinalQties()
-    limSup = 50
+    limSup = 100
     badQties = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
     print("HIDE SENSITIVE QTY ")
     mat.deleteListOfSensitiveQuantity(badQties)
@@ -540,7 +540,7 @@ def routine():
     
     
     l=mat.cardinalPrice()
-    limSup = 8000
+    limSup = 9000
     badPrice = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
     print("HIDE SENSITIVE QTY ")
     mat.noiseSensitivePrice(badPrice)
