@@ -43,7 +43,7 @@ class matrix():
         with open(self.pathFile) as file:
             reader = csv.reader(file,skipinitialspace=True, quotechar="'")
             for row in reader:     
-                row[0] = 'KAKKAKAK'+row[0]
+                row[0] = 'KAK'+row[0]
                 mat.append(row)
                 monthTmp = row[1][5:7]
                 users.append(row[0])
@@ -112,7 +112,7 @@ class matrix():
         for idxMonth in range(len(self.monthIdxsList)-1):
             debIdx =self.monthIdxsList[idxMonth]
             finIdx = self.monthIdxsList[idxMonth+1]
-            res =self.cardinalDay( self.matrice[debIdx:finIdx])
+            res =self.cardinalDay(self.matrice[debIdx:finIdx])
             # print(res)
             res = res[-(int(len(res)*0.33)):]
             # print(res)
@@ -120,7 +120,8 @@ class matrix():
             for line in self.matrice[debIdx:finIdx]:
                 day = int(line[1][-2:])
                 if day not in daysRes:
-                    line[1] = line[1][:-2]+str(res[-(day%len(res))][0]).zfill(2)
+                    # line[1] = line[1][:-2]+str(res[-(day%len(res))][0]).zfill(2)
+                    line[1] = line[1][:-2]+str(random.choice(res)[0]).zfill(2)
                     
             print("APRES COUP" ,self.cardinalDay( self.matrice[debIdx:finIdx]))
             # print(res)
@@ -191,12 +192,49 @@ class matrix():
     
     def myround(self,x, base=5):
         return int(base * round(float(x)/base))
+        
+    def convertToNumber (self,s):
+        return int.from_bytes(s.encode(), 'little')
+        
+        
+    def convertFromNumber (self,n):
+        return n.to_bytes(math.ceil(n.bit_length() / 8), 'little').decode()
+    
+    def cardinalItem(self):
+        items=[]
+        counter_items=[]
+        cnter = 0 
+        start = time.process_time()
+        matRes=[]
+        for line in self.matrice:
+            if line[0] == "DEL" or line[3][:5] == "POST" or line[3][:5] == "M" or line[3][:5] == "BANK " or line[3][:5] == "D"or line[3][:5] == "C2" or line[3][:5] == "PADS":
+                continue
+            item = int(line[3][:5]+line[1][2:-3].replace("/","")+line[0][-4:])
+            if item not in items:
+                items.append(item)
+                # print(item)
+                counter_items.append(1)
+            else:
+                counter_items[items.index(item)] = counter_items[items.index(item)] + 1
+            if cnter in self.monthIdxsList:
+                print(cnter)
+                for e in range(len(items)):
+                    matRes.append([items[e],counter_items[e]])
+                print("Temps de boucle : {}".format(time.process_time() - start))
+                start = time.process_time()
+                items=[]
+                counter_items=[]
+                
+            cnter+=1
+        return sorted(matRes,key=lambda item : item[1])
     
     def cardinalQties(self):
         qties=[]
         counter_qties=[]
         for line in self.matrice:
             qty = int(line[-1])
+            if line[0] == "DEL":
+                continue
             if qty not in qties:
                 qties.append(qty)
                 counter_qties.append(1)
@@ -209,6 +247,8 @@ class matrix():
         counter_price=[]
         for line in self.matrice:
             pr = float(line[-2])
+            if line[0] == "DEL":
+                continue
             if pr not in price:
                 price.append(pr)
                 counter_price.append(1)
@@ -221,6 +261,8 @@ class matrix():
         counter_hours=[]
         for line in self.matrice:
             hour = int(line[2][:2])
+            if line[0] == "DEL":
+                continue
             if hour not in hours:
                 hours.append(hour)
                 counter_hours.append(1)
@@ -294,11 +336,11 @@ class matrix():
             if(qty<borneMin or qty>borneSup):
                 line[0] = "DEL"
         
-    def deleteSensitivePrice(self,borneMin,borneSup=math.inf):
+    def deleteSensitivePrice(self,listOfPrice):
         for line in self.matrice:
-            qty = float(line[ -2])
-            if(qty<borneMin or qty>borneSup):
-                line[0] = "DEL"
+            if(float(line[-2])) in listOfPrice:
+                # line[-1] = self.myround(float(line[-1]),12)
+                line[0] ="DEL"
                 
         
     def checkRedonAndDelete(self):
@@ -489,6 +531,21 @@ class matrix():
         for idx in range(len(self.monthIdxsList)-1):
             for x in range(nb):
                 self.matrice[random.randint(self.monthIdxsList[idx],self.monthIdxsList[idx+1])][0] = "DEL"
+    def ousontcesmerdes(self):
+        l=[]
+        for line in self.matrice:
+            try:
+                test = int(line[3][:5])
+            except ValueError:
+                if(line[3] not in l):
+                    l.append(line[3])
+        return l
+            
+            
+    def cquoicesmerdes(self):
+        for line in self.matrice:
+            if(line[3]=="POST"or line[3][:5] == "M" or line[3][:5] == "BANK " or line[3][:5] == "D"or line[3][:5] == "C2" or line[3][:5] == "PADS"):
+                line[0]=="DEL"
         
 def routine():
     mat = matrix(P)
@@ -524,7 +581,7 @@ def routine():
     # mat.pseudonimazeItemId()
     
     #regrp le total des items par mois par user
-    # mat.monthItemGathering()
+    mat.monthItemGathering()
     
     # on mélange tout les users
     # print("SHUFFLE USERS")
@@ -534,7 +591,7 @@ def routine():
     # mat.shuffleItemPairs()
     
     l= mat.cardinalQties()
-    limSup = 25
+    limSup = 100
     badQties = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
     print("HIDE SENSITIVE QTY : ",limSup)
     mat.deleteListOfSensitiveQuantity(badQties)
@@ -545,9 +602,17 @@ def routine():
     l=mat.cardinalPrice()
     limSup = 9000
     badPrice = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
-    print("deleted line in total" , sum([l[i][1] for i in range(len(l)) if l[i][1] <=limSup]))
+    print("Hidden price line in total" , sum([l[i][1] for i in range(len(l)) if l[i][1] <=limSup]))
     print("HIDE SENSITIVE PRICE  : ",limSup)
     mat.noiseSensitivePrice(badPrice)
+    
+    
+    
+    limSup = 10
+    badPrice = [l[i][0] for i in range(len(l)) if l[i][1]<=limSup]
+    print("deleted price line in total" , sum([l[i][1] for i in range(len(l)) if l[i][1] <=limSup]))
+    print("DELETE SENSITIVE PRICE  : ",limSup)
+    mat.deleteSensitivePrice(badPrice)
     
     
     print("SHUFFLE MONTH HOURS ")
@@ -561,7 +626,8 @@ def routine():
     # print("FINAL USERS")
     # mat.getFinalUsers(5,90)
     
-
+    print("dou sa sort ces trucs")
+    mat.cquoicesmerdes()
     #check les redondances et ajoute du bruits 
     # print("TCHEK DOUBLONS AND DEL")
     # print("NUMBER OF DOUBLONS : " +str(mat.checkRedonAndDelete()))
@@ -573,8 +639,15 @@ def routine():
     print("NUMBER OF DELETED LINES : ", dLines)
     print(" DELETED LINES : " + str(dLines/mat.getLength()*100)[:4]+"%")
     
+    
+    
+    print('QTY : ',mat.cardinalQties())
+    print('PRICE : ',mat.cardinalPrice())
+    print('DAY : ',mat.cardinalDay(mat.matrice))
+    
+    
     print("SAUVEGARDE")
-    mat.save("ouput.csv")
+    mat.save("ouputBadMetrics.csv")
     
 def mainQ():
     mat = matrix(P)
@@ -642,6 +715,7 @@ def main():
         
 m = matrix(P)
 m.load()
+m.generalizePriceRound()
 # # m.generalizeDayPeriod()
 # m.generalizeMonth()
 # m.monthItemGathering()
@@ -650,6 +724,6 @@ m.load()
 
 if __name__ == "__main__":
     main()
-    mainTest()
+    # mainTest()
 
     

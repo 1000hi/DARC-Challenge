@@ -1009,24 +1009,30 @@ def mainTest():
     print("Temps d'initialisation : {}".format(time.process_time() - start))
     elist=[]
     start = time.process_time()
-    # e1=m.e1_metric()
-    # elist.append(e1)
-    # print("E1 score : {}".format(e1))
+    e1=m.e1_metric()
+    elist.append(e1)
+    print("E1 score : {}".format(e1))
+    
     # e2=m.e2_metric()
     # elist.append(e2)
-    # print("E2 score : {}".format(e2)))
+    # print("E2 score : {}".format(e2))
+    
     # e3=m.e3_metric()
     # elist.append(e3)
     # print("E3 score : {}".format(e3))
+    
     e4=m.e4_metric()
     elist.append(e4)
     print("E4 score : {}".format(e4))
+    
     e5=m.e5_metric()
     elist.append(e5)
-    print("E5 score : {}".format(m.e5_metric()))
+    print("E5 score : {}".format(e5))
+    
     e6=m.e6_metric()
     elist.append(e6)
-    print("E6 score : {}".format(m.e6_metric()))
+    print("E6 score : {}".format(e6))
+    
 
     print("Temps de calcul : {}".format(time.process_time() - start))
 
